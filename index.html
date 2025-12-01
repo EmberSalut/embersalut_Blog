@@ -4,9 +4,10 @@
 <head>
    <meta charset="UTF-8">
    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   <title>EmberSalut的网址收藏夹</title>
+   <title>EmberSalut的网址收藏夹（云端同步版）</title>
    <script src="https://cdn.tailwindcss.com"></script>
    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+   <script src="https://cdn.jsdelivr.net/npm/axios@1.6.8/dist/axios.min.js"></script>
    <script>
       tailwind.config = {
          theme: {
@@ -17,7 +18,8 @@
                   accent: '#9f7aea',
                   neutral: '#f7fafc',
                   darkBg: '#1a202c',
-                  darkCard: '#2d3748'
+                  darkCard: '#2d3748',
+                  admin: '#e53e3e'
                },
                fontFamily: {
                   sans: ['Inter', 'system-ui', 'sans-serif'],
@@ -27,6 +29,7 @@
                   'card-hover': '0 10px 30px rgba(0, 0, 0, 0.12)',
                   'dark-card': '0 4px 20px rgba(0, 0, 0, 0.3)',
                   'dark-card-hover': '0 10px 30px rgba(0, 0, 0, 0.4)',
+                  'admin': '0 0 0 2px rgba(229, 62, 62, 0.2)'
                }
             },
          }
@@ -34,36 +37,19 @@
    </script>
    <style type="text/tailwindcss">
       @layer utilities {
-            .content-auto {
-                content-visibility: auto;
-            }
-            .link-transition {
-                transition: all 0.3s ease;
-            }
-            .card-transition {
-                transition: transform 0.3s ease, box-shadow 0.3s ease;
-            }
-            .search-focus {
-                @apply focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none;
-            }
-            .dark-mode {
-                @apply bg-darkBg text-white;
-            }
-            .dark-card {
-                @apply bg-darkCard text-white;
-            }
-            .dark-text-gray-600 {
-                @apply text-gray-300;
-            }
-            .dark-text-gray-400 {
-                @apply text-gray-500;
-            }
-            .modal-enter {
-                @apply scale-100 opacity-100;
-            }
-            .delete-btn {
-                @apply opacity-0 group-hover:opacity-100 transition-opacity ml-auto text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300;
-            }
+            .content-auto { content-visibility: auto; }
+            .link-transition { transition: all 0.3s ease; }
+            .card-transition { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+            .search-focus { @apply focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none; }
+            .dark-mode { @apply bg-darkBg text-white; }
+            .dark-card { @apply bg-darkCard text-white; }
+            .dark-text-gray-600 { @apply text-gray-300; }
+            .dark-text-gray-400 { @apply text-gray-500; }
+            .modal-enter { @apply scale-100 opacity-100; }
+            .delete-btn { @apply opacity-0 group-hover:opacity-100 transition-opacity ml-auto text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300; }
+            .admin-btn { @apply px-3 py-2 rounded-full bg-admin/10 hover:bg-admin/20 text-admin transition-colors; }
+            .loading-spin { animation: spin 1s linear infinite; }
+            @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         }
     </style>
 </head>
@@ -92,6 +78,11 @@
                <i class="fa fa-plus mr-2" aria-hidden="true"></i>添加网址
             </button>
 
+            <!-- 管理员按钮 -->
+            <button id="adminBtn" class="admin-btn">
+               <i class="fa fa-cog text-xl" aria-hidden="true"></i>
+            </button>
+
             <!-- 主题切换按钮 -->
             <button id="themeToggle" class="px-3 py-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors">
                <i class="fa fa-moon-o text-xl" aria-hidden="true"></i>
@@ -100,6 +91,14 @@
       </div>
    </header>
 
+   <!-- 加载动画（全局） -->
+   <div id="loadingOverlay" class="fixed inset-0 bg-black/30 flex items-center justify-center hidden z-50">
+      <div class="bg-white dark-card rounded-xl p-6 flex flex-col items-center">
+         <i class="fa fa-spinner loading-spin text-3xl text-primary mb-3"></i>
+         <p class="text-gray-700 dark:text-gray-300">处理中...</p>
+      </div>
+   </div>
+
    <!-- 密码验证弹窗（默认隐藏） -->
    <div id="passwordModal"
       class="fixed inset-0 bg-black/50 flex items-center justify-center hidden z-50 transition-opacity duration-300">
@@ -107,10 +106,10 @@
          id="passwordModalContent">
          <h3 class="text-xl font-bold mb-4 flex items-center">
             <i class="fa fa-lock mr-2 text-primary" aria-hidden="true"></i>
-            验证密码
+            <span id="passwordModalTitle">验证密码</span>
          </h3>
          <div class="mb-4">
-            <label class="block text-sm text-gray-600 dark-text-gray-300 mb-1">请输入管理密码</label>
+            <label class="block text-sm text-gray-600 dark-text-gray-300 mb-1">请输入管理员密码</label>
             <input type="password" id="adminPassword"
                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-darkBg dark:text-white"
                placeholder="输入密码">
@@ -125,10 +124,71 @@
       </div>
    </div>
 
+   <!-- 管理员面板弹窗（默认隐藏） -->
+   <div id="adminModal"
+      class="fixed inset-0 bg-black/50 flex items-center justify-center hidden z-50 transition-opacity duration-300">
+      <div class="bg-white dark-card rounded-xl p-6 w-full max-w-md card-transition transform scale-95 opacity-0"
+         id="adminModalContent">
+         <h3 class="text-xl font-bold mb-4 flex items-center">
+            <i class="fa fa-cog mr-2 text-admin" aria-hidden="true"></i>
+            管理员面板
+         </h3>
+         <div class="space-y-4">
+            <!-- 密码修改 -->
+            <div class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+               <h4 class="font-medium mb-2 flex items-center">
+                  <i class="fa fa-key mr-2 text-primary" aria-hidden="true"></i>修改管理员密码
+               </h4>
+               <div class="space-y-2">
+                  <input type="password" id="oldPassword"
+                     class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-darkBg dark:text-white"
+                     placeholder="原密码">
+                  <input type="password" id="newPassword"
+                     class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-darkBg dark:text-white"
+                     placeholder="新密码（至少6位）">
+                  <input type="password" id="confirmNewPassword"
+                     class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-darkBg dark:text-white"
+                     placeholder="确认新密码">
+                  <p id="passwordChangeError" class="text-red-500 text-sm hidden">密码不一致或格式错误</p>
+                  <p id="passwordChangeSuccess" class="text-green-500 text-sm hidden">密码修改成功！</p>
+               </div>
+               <button id="changePasswordBtn"
+                  class="mt-3 w-full px-4 py-2 bg-admin text-white rounded-lg hover:bg-admin/90">保存修改</button>
+            </div>
+
+            <!-- 数据管理 -->
+            <div class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+               <h4 class="font-medium mb-3 flex items-center">
+                  <i class="fa fa-database mr-2 text-primary" aria-hidden="true"></i>数据管理
+               </h4>
+               <div class="flex gap-3">
+                  <button id="exportDataBtn"
+                     class="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 flex items-center justify-center">
+                     <i class="fa fa-download mr-2" aria-hidden="true"></i>导出数据
+                  </button>
+                  <button id="importDataBtn"
+                     class="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 flex items-center justify-center">
+                     <i class="fa fa-upload mr-2" aria-hidden="true"></i>导入数据
+                  </button>
+                  <input type="file" id="importFileInput" accept=".json" class="hidden">
+               </div>
+               <button id="clearDataBtn"
+                  class="mt-3 w-full px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 flex items-center justify-center">
+                  <i class="fa fa-trash mr-2" aria-hidden="true"></i>清空自定义数据
+               </button>
+            </div>
+         </div>
+         <div class="mt-6 flex justify-end">
+            <button type="button" id="closeAdminModalBtn"
+               class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">关闭</button>
+         </div>
+      </div>
+   </div>
+
    <!-- 新增网址弹窗（默认隐藏） -->
    <div id="addLinkModal"
       class="fixed inset-0 bg-black/50 flex items-center justify-center hidden z-50 transition-opacity duration-300">
-      <div class="bg-white dark-card rounded-xl p-6 w-full max-w-md card-transition transform scale-95 opacity-0"
+      <div class="bg-white dark-card rounded-xl p-6 w-full max-w-sm card-transition transform scale-95 opacity-0"
          id="addLinkModalContent">
          <h3 class="text-xl font-bold mb-4 flex items-center">
             <i class="fa fa-plus-circle mr-2 text-primary" aria-hidden="true"></i>
@@ -199,14 +259,12 @@
       </div>
    </div>
 
-   <!-- 成功提示弹窗 -->
+   <!-- 提示弹窗 -->
    <div id="successModal"
       class="fixed top-20 left-1/2 -translate-x-1/2 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 hidden transition-opacity duration-300">
       <i class="fa fa-check-circle mr-2" aria-hidden="true"></i>
       <span id="successMsg">操作成功！</span>
    </div>
-
-   <!-- 错误提示弹窗 -->
    <div id="errorModal"
       class="fixed top-20 left-1/2 -translate-x-1/2 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 hidden transition-opacity duration-300">
       <i class="fa fa-exclamation-circle mr-2" aria-hidden="true"></i>
@@ -698,7 +756,7 @@
                <h4 class="font-medium text-gray-800 dark:text-white mb-2">个人简介</h4>
                <p class="text-gray-600 dark-text-gray-300 text-sm leading-relaxed">
                   热衷于前端开发、UI/UX设计与技术分享，喜欢收集和整理各类实用工具与资源。
-                  这个收藏夹是我日常使用的优质网站汇总，支持添加/删除自定义网址（需密码验证），所有数据存储在本地浏览器中，安全隐私。
+                  这个收藏夹是我日常使用的优质网站汇总，支持添加/删除自定义网址（需密码验证），所有数据存储在 GitHub Gist 云端，跨设备同步访问。
                   欢迎通过上面的联系方式与我交流学习 🤝
                </p>
             </div>
@@ -720,8 +778,8 @@
       <div class="container mx-auto px-4">
          <div class="flex flex-col md:flex-row justify-between items-center">
             <div class="mb-4 md:mb-0">
-               <p class="text-gray-400">© 2025 EmberSalut的网址收藏夹</p>
-               <p class="text-gray-500 text-sm mt-1">一个简洁高效的个人网址管理工具 | 数据存储在本地浏览器 | 支持增删自定义网址</p>
+               <p class="text-gray-400">© 2025 EmberSalut的网址收藏夹（云端同步版）</p>
+               <p class="text-gray-500 text-sm mt-1">支持跨设备访问 | 数据存储在GitHub Gist | 安全隐私 | 开源免费</p>
             </div>
             <div class="flex space-x-4">
                <a href="https://github.com/EmberSalut" target="_blank"
@@ -741,10 +799,12 @@
    </footer>
 
    <script>
-      // 配置项（可修改这里的密码）
+      // 核心配置（修改这里实现云端同步）
       const CONFIG = {
-         ADMIN_PASSWORD: '123456', // 默认密码，建议修改为自己的密码
-         STORAGE_KEY: 'bookmark_links', // 本地存储键名
+         ADMIN_PASSWORD: localStorage.getItem('admin_password') || '123456', // 密码存储在本地，首次使用默认123456
+         STORAGE_KEY: 'bookmark_links', // 本地存储键名（兼容旧数据）
+         GIST_ID: localStorage.getItem('gist_id') || '', // GitHub Gist ID（自动生成/存储）
+         GITHUB_TOKEN: localStorage.getItem('github_token') || '', // GitHub访问令牌（用户手动输入）
          BUILT_IN_LINK_PREFIX: 'built-in-' // 内置链接ID前缀（不可删除）
       };
 
@@ -753,117 +813,4 @@
       const categories = document.querySelectorAll('.category');
       const noResults = document.getElementById('noResults');
       const addLinkBtn = document.getElementById('addLinkBtn');
-      const themeToggle = document.getElementById('themeToggle');
-      const passwordModal = document.getElementById('passwordModal');
-      const passwordModalContent = document.getElementById('passwordModalContent');
-      const addLinkModal = document.getElementById('addLinkModal');
-      const addLinkModalContent = document.getElementById('addLinkModalContent');
-      const addLinkForm = document.getElementById('addLinkForm');
-      const adminPassword = document.getElementById('adminPassword');
-      const passwordError = document.getElementById('passwordError');
-      const confirmPasswordBtn = document.getElementById('confirmPasswordBtn');
-      const cancelPasswordBtn = document.getElementById('cancelPasswordBtn');
-      const closeAddLinkModalBtn = document.getElementById('closeAddLinkModalBtn');
-      const successModal = document.getElementById('successModal');
-      const errorModal = document.getElementById('errorModal');
-      const deleteConfirmModal = document.getElementById('deleteConfirmModal');
-      const deleteConfirmModalContent = document.getElementById('deleteConfirmModalContent');
-      const deleteLinkId = document.getElementById('deleteLinkId');
-      const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
-      const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
-      const deleteLinkBtns = document.querySelectorAll('.delete-link-btn');
-
-      // 全局变量
-      let currentOperation = ''; // 记录当前需要密码验证的操作：add/delete
-      let currentDeleteLinkId = ''; // 记录当前要删除的链接ID
-
-      // 初始化：从本地存储加载自定义链接
-      function init() {
-         loadCustomLinks();
-         initTheme();
-         initSearch();
-         bindEvents();
-      }
-
-      // 从本地存储加载自定义链接
-      function loadCustomLinks() {
-         const customLinks = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEY) || '[]');
-         customLinks.forEach(link => {
-            addLinkToCategory(link);
-         });
-      }
-
-      // 添加链接到对应分类（支持删除按钮）
-      function addLinkToCategory(link) {
-         const categoryContent = document.querySelector(`.category-content[data-category="${link.category}"]`);
-         if (categoryContent) {
-            const linkElement = document.createElement('div');
-            linkElement.className = 'link group';
-            linkElement.setAttribute('data-link-id', link.id);
-
-            // 自定义链接显示删除按钮，内置链接禁用删除
-            const isBuiltIn = link.id.startsWith(CONFIG.BUILT_IN_LINK_PREFIX);
-            const deleteBtnHtml = isBuiltIn
-               ? `<button class="delete-link-btn delete-btn" data-id="${link.id}" disabled><i class="fa fa-trash-o" aria-hidden="true"></i></button>`
-               : `<button class="delete-link-btn delete-btn" data-id="${link.id}"><i class="fa fa-trash-o" aria-hidden="true"></i></button>`;
-
-            linkElement.innerHTML = `
-                    <div class="flex items-start">
-                        <a href="${link.url}" target="_blank" class="flex-1 flex items-start link-transition group-hover:text-${getCategoryColor(link.category)}">
-                            <i class="fa fa-external-link text-sm mt-1 mr-2 text-gray-400 dark-text-gray-500 group-hover:text-${getCategoryColor(link.category)}/70" aria-hidden="true"></i>
-                            <div>
-                                <span class="font-medium block">${link.name}</span>
-                                <span class="text-gray-600 dark-text-gray-300 text-sm mt-1 block">${link.desc || '无描述'}</span>
-                            </div>
-                        </a>
-                        ${deleteBtnHtml}
-                    </div>
-                `;
-            categoryContent.appendChild(linkElement);
-
-            // 绑定新添加链接的删除按钮事件
-            if (!isBuiltIn) {
-               linkElement.querySelector('.delete-link-btn').addEventListener('click', function (e) {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  currentDeleteLinkId = link.id;
-                  openDeleteConfirmModal();
-               });
-            }
-         }
-      }
-
-      // 获取分类对应的颜色
-      function getCategoryColor(category) {
-         const colorMap = {
-            '学习工具': 'primary',
-            '设计资源': 'secondary',
-            '日常常用': 'accent',
-            '娱乐休闲': 'green-500',
-            '办公效率': 'orange-500',
-            '实用工具': 'red-500',
-            '编程资源': 'blue-600'
-         };
-         return colorMap[category] || 'primary';
-      }
-
-      // 生成唯一链接ID
-      function generateLinkId() {
-         return 'custom-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
-      }
-
-      // 初始化主题
-      function initTheme() {
-         const isDarkMode = localStorage.getItem('dark_mode') === 'true';
-         if (isDarkMode) {
-            document.body.classList.add('dark-mode');
-            themeToggle.innerHTML = '<i class="fa fa-sun-o text-xl" aria-hidden="true"></i>';
-         } else {
-            document.body.classList.remove('dark-mode');
-            themeToggle.innerHTML = '<i class="fa fa-moon-o text-xl" aria-hidden="true"></i>';
-         }
-      }
-
-      // 初始化搜索功能
-      function initSearch() {
-         searchBox.addEventListener('input
+      const themeToggle =
