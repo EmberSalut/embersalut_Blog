@@ -177,6 +177,30 @@
                   <i class="fa fa-trash mr-2" aria-hidden="true"></i>清空自定义数据
                </button>
             </div>
+
+            <!-- 云端同步（新增） -->
+            <div class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+               <h4 class="font-medium mb-3 flex items-center">
+                  <i class="fa fa-cloud mr-2 text-primary" aria-hidden="true"></i>云端同步（GitHub Gist）
+               </h4>
+               <div class="mb-3">
+                  <input type="text" id="githubTokenInput"
+                     class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-darkBg dark:text-white"
+                     placeholder="GitHub 个人访问令牌（Token）">
+               </div>
+               <div class="flex gap-3">
+                  <button id="initGistBtn"
+                     class="flex-1 px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600">
+                     <i class="fa fa-plus mr-2" aria-hidden="true"></i>初始化云端存储
+                  </button>
+                  <button id="syncGistBtn" class="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+                     <i class="fa fa-refresh mr-2" aria-hidden="true"></i>同步云端数据
+                  </button>
+               </div>
+               <p class="text-gray-500 dark-text-gray-400 text-xs mt-2">
+                  提示：Token 仅存储在本地，不会上传到任何服务器；Gist 为私有，仅你可见
+               </p>
+            </div>
          </div>
          <div class="mt-6 flex justify-end">
             <button type="button" id="closeAdminModalBtn"
@@ -801,7 +825,7 @@
    <script>
       // 核心配置（修改这里实现云端同步）
       const CONFIG = {
-         ADMIN_PASSWORD: localStorage.getItem('admin_password') || '123456', // 密码存储在本地，首次使用默认123456
+         ADMIN_PASSWORD: localStorage.getItem('admin_password') || '584526', // 密码存储在本地，首次使用默认584526
          STORAGE_KEY: 'bookmark_links', // 本地存储键名（兼容旧数据）
          GIST_ID: localStorage.getItem('gist_id') || '', // GitHub Gist ID（自动生成/存储）
          GITHUB_TOKEN: localStorage.getItem('github_token') || '', // GitHub访问令牌（用户手动输入）
@@ -813,4 +837,416 @@
       const categories = document.querySelectorAll('.category');
       const noResults = document.getElementById('noResults');
       const addLinkBtn = document.getElementById('addLinkBtn');
-      const themeToggle =
+      const themeToggle = document.getElementById('themeToggle');
+      const adminBtn = document.getElementById('adminBtn');
+      const passwordModal = document.getElementById('passwordModal');
+      const passwordModalContent = document.getElementById('passwordModalContent');
+      const passwordModalTitle = document.getElementById('passwordModalTitle');
+      const adminPassword = document.getElementById('adminPassword');
+      const passwordError = document.getElementById('passwordError');
+      const cancelPasswordBtn = document.getElementById('cancelPasswordBtn');
+      const confirmPasswordBtn = document.getElementById('confirmPasswordBtn');
+      const adminModal = document.getElementById('adminModal');
+      const adminModalContent = document.getElementById('adminModalContent');
+      const closeAdminModalBtn = document.getElementById('closeAdminModalBtn');
+      const changePasswordBtn = document.getElementById('changePasswordBtn');
+      const oldPassword = document.getElementById('oldPassword');
+      const newPassword = document.getElementById('newPassword');
+      const confirmNewPassword = document.getElementById('confirmNewPassword');
+      const passwordChangeError = document.getElementById('passwordChangeError');
+      const passwordChangeSuccess = document.getElementById('passwordChangeSuccess');
+      const exportDataBtn = document.getElementById('exportDataBtn');
+      const importDataBtn = document.getElementById('importDataBtn');
+      const importFileInput = document.getElementById('importFileInput');
+      const clearDataBtn = document.getElementById('clearDataBtn');
+      const addLinkModal = document.getElementById('addLinkModal');
+      const addLinkModalContent = document.getElementById('addLinkModalContent');
+      const addLinkForm = document.getElementById('addLinkForm');
+      const closeAddLinkModalBtn = document.getElementById('closeAddLinkModalBtn');
+      const deleteConfirmModal = document.getElementById('deleteConfirmModal');
+      const deleteConfirmModalContent = document.getElementById('deleteConfirmModalContent');
+      const deleteLinkId = document.getElementById('deleteLinkId');
+      const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
+      const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+      const successModal = document.getElementById('successModal');
+      const successMsg = document.getElementById('successMsg');
+      const errorModal = document.getElementById('errorModal');
+      const errorMsg = document.getElementById('errorMsg');
+      const loadingOverlay = document.getElementById('loadingOverlay');
+
+      // 云端同步相关DOM
+      const githubTokenInput = document.getElementById('githubTokenInput');
+      const initGistBtn = document.getElementById('initGistBtn');
+      const syncGistBtn = document.getElementById('syncGistBtn');
+
+      // 初始化主题
+      function initTheme() {
+         if (localStorage.getItem('darkMode') === 'true' ||
+            (!localStorage.getItem('darkMode') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.body.classList.add('dark-mode');
+            document.querySelectorAll('.dark-card').forEach(el => el.classList.add('dark-card'));
+            themeToggle.innerHTML = '<i class="fa fa-sun-o text-xl" aria-hidden="true"></i>';
+         } else {
+            document.body.classList.remove('dark-mode');
+            themeToggle.innerHTML = '<i class="fa fa-moon-o text-xl" aria-hidden="true"></i>';
+         }
+      }
+
+      // 切换主题
+      themeToggle.addEventListener('click', () => {
+         const isDark = document.body.classList.toggle('dark-mode');
+         localStorage.setItem('darkMode', isDark);
+         if (isDark) {
+            themeToggle.innerHTML = '<i class="fa fa-sun-o text-xl" aria-hidden="true"></i>';
+         } else {
+            themeToggle.innerHTML = '<i class="fa fa-moon-o text-xl" aria-hidden="true"></i>';
+         }
+      });
+
+      // 搜索功能
+      searchBox.addEventListener('input', (e) => {
+         const searchTerm = e.target.value.toLowerCase().trim();
+         let hasResults = false;
+
+         categories.forEach(category => {
+            const links = category.querySelectorAll('.link');
+            let categoryHasResults = false;
+
+            links.forEach(link => {
+               const linkName = link.querySelector('.font-medium').textContent.toLowerCase();
+               const linkDesc = link.querySelector('.text-sm')?.textContent.toLowerCase() || '';
+
+               if (linkName.includes(searchTerm) || linkDesc.includes(searchTerm)) {
+                  link.classList.remove('hidden');
+                  categoryHasResults = true;
+                  hasResults = true;
+               } else {
+                  link.classList.add('hidden');
+               }
+            });
+
+            category.style.display = categoryHasResults ? 'block' : 'none';
+         });
+
+         noResults.style.display = hasResults ? 'none' : 'block';
+      });
+
+      // 显示/隐藏弹窗通用函数
+      function showModal(modal, modalContent) {
+         modal.classList.remove('hidden');
+         setTimeout(() => {
+            modalContent.classList.add('modal-enter');
+         }, 10);
+         document.body.style.overflow = 'hidden';
+      }
+
+      function hideModal(modal, modalContent) {
+         modalContent.classList.remove('modal-enter');
+         setTimeout(() => {
+            modal.classList.add('hidden');
+            document.body.style.overflow = 'auto';
+         }, 300);
+      }
+
+      // 显示提示弹窗
+      function showSuccess(message) {
+         successMsg.textContent = message;
+         successModal.classList.remove('hidden');
+         successModal.style.opacity = '1';
+         setTimeout(() => {
+            successModal.style.opacity = '0';
+            setTimeout(() => successModal.classList.add('hidden'), 300);
+         }, 3000);
+      }
+
+      function showError(message) {
+         errorMsg.textContent = message;
+         errorModal.classList.remove('hidden');
+         errorModal.style.opacity = '1';
+         setTimeout(() => {
+            errorModal.style.opacity = '0';
+            setTimeout(() => errorModal.classList.add('hidden'), 300);
+         }, 3000);
+      }
+
+      // 密码验证弹窗
+      function openPasswordModal(title, onSuccess) {
+         passwordModalTitle.textContent = title;
+         adminPassword.value = '';
+         passwordError.classList.add('hidden');
+         showModal(passwordModal, passwordModalContent);
+
+         // 重置确认按钮事件
+         confirmPasswordBtn.onclick = () => {
+            if (adminPassword.value === CONFIG.ADMIN_PASSWORD) {
+               hideModal(passwordModal, passwordModalContent);
+               onSuccess();
+            } else {
+               passwordError.classList.remove('hidden');
+            }
+         };
+      }
+
+      cancelPasswordBtn.addEventListener('click', () => {
+         hideModal(passwordModal, passwordModalContent);
+      });
+
+      // 管理员面板
+      adminBtn.addEventListener('click', () => {
+         openPasswordModal('验证管理员密码', () => {
+            showModal(adminModal, adminModalContent);
+            // 清空密码修改表单
+            oldPassword.value = '';
+            newPassword.value = '';
+            confirmNewPassword.value = '';
+            passwordChangeError.classList.add('hidden');
+            passwordChangeSuccess.classList.add('hidden');
+            // 填充GitHub Token
+            githubTokenInput.value = CONFIG.GITHUB_TOKEN;
+         });
+      });
+
+      closeAdminModalBtn.addEventListener('click', () => {
+         hideModal(adminModal, adminModalContent);
+      });
+
+      // 修改管理员密码
+      changePasswordBtn.addEventListener('click', () => {
+         passwordChangeError.classList.add('hidden');
+         passwordChangeSuccess.classList.add('hidden');
+
+         if (oldPassword.value !== CONFIG.ADMIN_PASSWORD) {
+            passwordChangeError.textContent = '原密码错误';
+            passwordChangeError.classList.remove('hidden');
+            return;
+         }
+
+         if (newPassword.value.length < 6) {
+            passwordChangeError.textContent = '新密码至少6位';
+            passwordChangeError.classList.remove('hidden');
+            return;
+         }
+
+         if (newPassword.value !== confirmNewPassword.value) {
+            passwordChangeError.textContent = '两次密码不一致';
+            passwordChangeError.classList.remove('hidden');
+            return;
+         }
+
+         localStorage.setItem('admin_password', newPassword.value);
+         CONFIG.ADMIN_PASSWORD = newPassword.value;
+         passwordChangeSuccess.classList.remove('hidden');
+
+         setTimeout(() => {
+            passwordChangeSuccess.classList.add('hidden');
+         }, 3000);
+      });
+
+      // 导出数据
+      exportDataBtn.addEventListener('click', () => {
+         const links = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEY) || '[]');
+         const dataStr = JSON.stringify(links, null, 2);
+         const dataBlob = new Blob([dataStr], { type: 'application/json' });
+         const url = URL.createObjectURL(dataBlob);
+
+         const a = document.createElement('a');
+         a.href = url;
+         a.download = `bookmark_links_${new Date().toISOString().slice(0, 10)}.json`;
+         document.body.appendChild(a);
+         a.click();
+         document.body.removeChild(a);
+         URL.revokeObjectURL(url);
+
+         showSuccess('数据导出成功！');
+      });
+
+      // 导入数据
+      importDataBtn.addEventListener('click', () => {
+         importFileInput.click();
+      });
+
+      importFileInput.addEventListener('change', (e) => {
+         const file = e.target.files[0];
+         if (!file) return;
+
+         const reader = new FileReader();
+         reader.onload = (event) => {
+            try {
+               const links = JSON.parse(event.target.result);
+               if (!Array.isArray(links)) {
+                  throw new Error('数据格式错误');
+               }
+
+               // 验证数据结构
+               links.forEach(link => {
+                  if (!link.id || !link.name || !link.url || !link.category) {
+                     throw new Error('数据字段不完整');
+                  }
+               });
+
+               localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(links));
+               loadCustomLinks();
+               showSuccess('数据导入成功！');
+               // 同步到云端
+               writeToGist();
+            } catch (error) {
+               showError(`导入失败：${error.message}`);
+            }
+         };
+         reader.readAsText(file);
+      });
+
+      // 清空自定义数据
+      clearDataBtn.addEventListener('click', () => {
+         if (confirm('确定要清空所有自定义数据吗？此操作不可撤销！')) {
+            localStorage.removeItem(CONFIG.STORAGE_KEY);
+            loadCustomLinks();
+            showSuccess('自定义数据已清空！');
+            // 同步到云端
+            writeToGist();
+         }
+      });
+
+      // 新增网址
+      addLinkBtn.addEventListener('click', () => {
+         openPasswordModal('验证添加权限', () => {
+            addLinkForm.reset();
+            showModal(addLinkModal, addLinkModalContent);
+         });
+      });
+
+      closeAddLinkModalBtn.addEventListener('click', () => {
+         hideModal(addLinkModal, addLinkModalContent);
+      });
+
+      addLinkForm.addEventListener('submit', (e) => {
+         e.preventDefault();
+
+         const formData = new FormData(addLinkForm);
+         const newLink = {
+            id: 'custom-' + Date.now(),
+            name: formData.get('linkName'),
+            url: formData.get('linkUrl'),
+            category: formData.get('linkCategory'),
+            desc: formData.get('linkDesc') || ''
+         };
+
+         saveLinkToLocal(newLink);
+         addLinkToDOM(newLink);
+         hideModal(addLinkModal, addLinkModalContent);
+         showSuccess('网址添加成功！');
+      });
+
+      // 删除网址确认
+      document.addEventListener('click', (e) => {
+         if (e.target.closest('.delete-link-btn')) {
+            const btn = e.target.closest('.delete-link-btn');
+            const linkId = btn.getAttribute('data-id');
+
+            // 内置链接不可删除
+            if (linkId.startsWith(CONFIG.BUILT_IN_LINK_PREFIX)) {
+               showError('内置链接不可删除！');
+               return;
+            }
+
+            openPasswordModal('验证删除权限', () => {
+               deleteLinkId.value = linkId;
+               showModal(deleteConfirmModal, deleteConfirmModalContent);
+            });
+         }
+      });
+
+      cancelDeleteBtn.addEventListener('click', () => {
+         hideModal(deleteConfirmModal, deleteConfirmModalContent);
+      });
+
+      confirmDeleteBtn.addEventListener('click', () => {
+         const linkId = deleteLinkId.value;
+         deleteLinkFromLocal(linkId);
+         deleteLinkFromDOM(linkId);
+         hideModal(deleteConfirmModal, deleteConfirmModalContent);
+         showSuccess('网址删除成功！');
+      });
+
+      // 本地存储操作
+      function saveLinkToLocal(link) {
+         const links = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEY) || '[]');
+         links.push(link);
+         localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(links));
+         // 同步到云端
+         writeToGist();
+      }
+
+      function deleteLinkFromLocal(linkId) {
+         let links = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEY) || '[]');
+         links = links.filter(link => link.id !== linkId);
+         localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(links));
+         // 同步到云端
+         writeToGist();
+      }
+
+      function getLocalLinks() {
+         return JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEY) || '[]');
+      }
+
+      // DOM操作
+      function addLinkToDOM(link) {
+         const categoryContent = document.querySelector(`.category-content[data-category="${link.category}"]`);
+         if (!categoryContent) return;
+
+         const linkEl = document.createElement('div');
+         linkEl.className = 'link group';
+         linkEl.setAttribute('data-link-id', link.id);
+         linkEl.innerHTML = `
+            <div class="flex items-start">
+               <a href="${link.url}" target="_blank"
+                  class="flex-1 flex items-start link-transition group-hover:text-primary">
+                  <i class="fa fa-external-link text-sm mt-1 mr-2 text-gray-400 dark-text-gray-500 group-hover:text-primary/70"
+                     aria-hidden="true"></i>
+                  <div>
+                     <span class="font-medium block">${link.name}</span>
+                     <span class="text-gray-600 dark-text-gray-300 text-sm mt-1 block">${link.desc || '无描述'}</span>
+                  </div>
+               </a>
+               <button class="delete-link-btn delete-btn" data-id="${link.id}">
+                  <i class="fa fa-trash-o" aria-hidden="true"></i>
+               </button>
+            </div>
+         `;
+
+         categoryContent.appendChild(linkEl);
+      }
+
+      function deleteLinkFromDOM(linkId) {
+         const linkEl = document.querySelector(`.link[data-link-id="${linkId}"]`);
+         if (linkEl) linkEl.remove();
+      }
+
+      function loadCustomLinks() {
+         // 清空现有自定义链接
+         document.querySelectorAll('.link').forEach(link => {
+            if (link.getAttribute('data-link-id').startsWith('custom-')) {
+               link.remove();
+            }
+         });
+
+         // 加载本地存储的自定义链接
+         const links = getLocalLinks();
+         links.forEach(link => {
+            addLinkToDOM(link);
+         });
+      }
+
+      // ---------------------- Gist 云端同步核心函数 ----------------------
+      // 1. 创建 Gist（首次初始化）
+      async function createGist(token) {
+         showLoading();
+         try {
+            const response = await axios.post(
+               'https://api.github.com/gists',
+               {
+                  description: 'EmberSalut的网址收藏夹数据',
+                  public: false, // 私有 Gist，仅自己可见
+                  files: {
+                     'bookmark_data.json': {
+                        content: JSON
