@@ -170,7 +170,7 @@
          <div class="mb-4">
             <label class="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">请输入管理员密码</label>
             <input type="password" id="adminPassword"
-               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-darkBg dark:text-white focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all"
+               class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-black placeholder-gray-500 focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all"
                placeholder="输入密码">
             <p id="passwordError" class="text-red-500 text-sm mt-2 hidden font-medium">密码错误，请重试</p>
          </div>
@@ -200,13 +200,13 @@
                </h4>
                <div class="space-y-2">
                   <input type="password" id="oldPassword"
-                     class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-darkBg dark:text-white focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all placeholder-gray-400"
+                     class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-black placeholder-gray-500 focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all"
                      placeholder="原密码">
                   <input type="password" id="newPassword"
-                     class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-darkBg dark:text-white focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all placeholder-gray-400"
+                     class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-black placeholder-gray-500 focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all"
                      placeholder="新密码（至少6位）">
                   <input type="password" id="confirmNewPassword"
-                     class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-darkBg dark:text-white focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all placeholder-gray-400"
+                     class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-black placeholder-gray-500 focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all"
                      placeholder="确认新密码">
                   <p id="passwordChangeError" class="text-red-500 text-sm hidden font-medium mt-1">密码不一致或格式错误</p>
                   <p id="passwordChangeSuccess" class="text-green-500 text-sm hidden font-medium mt-1">密码修改成功！</p>
@@ -244,7 +244,7 @@
                </h4>
                <div class="mb-3">
                   <input type="text" id="githubTokenInput"
-                     class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-darkBg dark:text-white focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all placeholder-gray-400"
+                     class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-black placeholder-gray-500 focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all"
                      placeholder="GitHub 个人访问令牌（Token）">
                </div>
                <div class="flex gap-3">
@@ -283,7 +283,7 @@
                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">网址名称 <span
                      class="text-red-500">*</span></label>
                <input type="text" name="linkName"
-                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-darkBg dark:text-white focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all placeholder-gray-400"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-black placeholder-gray-500 focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all"
                   placeholder="如：GitHub"
                   required>
             </div>
@@ -291,14 +291,14 @@
                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">网址链接 <span
                      class="text-red-500">*</span></label>
                <input type="url" name="linkUrl"
-                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-darkBg dark:text-white focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all placeholder-gray-400"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-black placeholder-gray-500 focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all"
                   placeholder="https://github.com" required>
             </div>
             <div class="mb-4">
                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">所属分类 <span
                      class="text-red-500">*</span></label>
                <select name="linkCategory"
-                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-darkBg dark:text-white focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-black focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all"
                   required>
                   <option value="学习工具" class="text-gray-800">学习工具</option>
                   <option value="设计资源" class="text-gray-800">设计资源</option>
@@ -312,7 +312,7 @@
             <div class="mb-4">
                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">描述</label>
                <textarea name="linkDesc"
-                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-darkBg dark:text-white focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all placeholder-gray-400"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-black placeholder-gray-500 focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all"
                   rows="2" placeholder="简单描述网址功能或用途"></textarea>
             </div>
             <div class="flex justify-end gap-3">
