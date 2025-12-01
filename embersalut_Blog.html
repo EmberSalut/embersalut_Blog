@@ -61,6 +61,9 @@
             .modal-enter {
                 @apply scale-100 opacity-100;
             }
+            .delete-btn {
+                @apply opacity-0 group-hover:opacity-100 transition-opacity ml-auto text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300;
+            }
         }
     </style>
 </head>
@@ -176,11 +179,38 @@
       </div>
    </div>
 
+   <!-- 删除确认弹窗（默认隐藏） -->
+   <div id="deleteConfirmModal"
+      class="fixed inset-0 bg-black/50 flex items-center justify-center hidden z-50 transition-opacity duration-300">
+      <div class="bg-white dark-card rounded-xl p-6 w-full max-w-sm card-transition transform scale-95 opacity-0"
+         id="deleteConfirmModalContent">
+         <h3 class="text-xl font-bold mb-4 flex items-center">
+            <i class="fa fa-exclamation-triangle mr-2 text-red-500" aria-hidden="true"></i>
+            确认删除
+         </h3>
+         <p class="text-gray-600 dark-text-gray-300 mb-6">确定要删除这个网址吗？此操作不可撤销。</p>
+         <input type="hidden" id="deleteLinkId"> <!-- 存储要删除的链接ID -->
+         <div class="flex justify-end gap-3">
+            <button type="button" id="cancelDeleteBtn"
+               class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">取消</button>
+            <button type="button" id="confirmDeleteBtn"
+               class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">确认删除</button>
+         </div>
+      </div>
+   </div>
+
    <!-- 成功提示弹窗 -->
    <div id="successModal"
       class="fixed top-20 left-1/2 -translate-x-1/2 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 hidden transition-opacity duration-300">
       <i class="fa fa-check-circle mr-2" aria-hidden="true"></i>
       <span id="successMsg">操作成功！</span>
+   </div>
+
+   <!-- 错误提示弹窗 -->
+   <div id="errorModal"
+      class="fixed top-20 left-1/2 -translate-x-1/2 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 hidden transition-opacity duration-300">
+      <i class="fa fa-exclamation-circle mr-2" aria-hidden="true"></i>
+      <span id="errorMsg">操作失败！</span>
    </div>
 
    <!-- 主要内容区 -->
@@ -197,38 +227,53 @@
                </h2>
             </div>
             <div class="category-content p-6 space-y-4" data-category="学习工具">
-               <div class="link group">
-                  <a href="https://www.khanacademy.org" target="_blank"
-                     class="flex items-start link-transition group-hover:text-primary">
-                     <i class="fa fa-external-link text-sm mt-1 mr-2 text-gray-400 dark-text-gray-500 group-hover:text-primary/70"
-                        aria-hidden="true"></i>
-                     <div>
-                        <span class="font-medium block">Khan Academy</span>
-                        <span class="text-gray-600 dark-text-gray-300 text-sm mt-1 block">免费在线学习课程与练习</span>
-                     </div>
-                  </a>
+               <div class="link group" data-link-id="built-in-1">
+                  <div class="flex items-start">
+                     <a href="https://www.khanacademy.org" target="_blank"
+                        class="flex-1 flex items-start link-transition group-hover:text-primary">
+                        <i class="fa fa-external-link text-sm mt-1 mr-2 text-gray-400 dark-text-gray-500 group-hover:text-primary/70"
+                           aria-hidden="true"></i>
+                        <div>
+                           <span class="font-medium block">Khan Academy</span>
+                           <span class="text-gray-600 dark-text-gray-300 text-sm mt-1 block">免费在线学习课程与练习</span>
+                        </div>
+                     </a>
+                     <button class="delete-link-btn delete-btn" data-id="built-in-1" disabled>
+                        <i class="fa fa-trash-o" aria-hidden="true"></i>
+                     </button>
+                  </div>
                </div>
-               <div class="link group">
-                  <a href="https://www.coursera.org" target="_blank"
-                     class="flex items-start link-transition group-hover:text-primary">
-                     <i class="fa fa-external-link text-sm mt-1 mr-2 text-gray-400 dark-text-gray-500 group-hover:text-primary/70"
-                        aria-hidden="true"></i>
-                     <div>
-                        <span class="font-medium block">Coursera</span>
-                        <span class="text-gray-600 dark-text-gray-300 text-sm mt-1 block">大学与机构的在线课程平台</span>
-                     </div>
-                  </a>
+               <div class="link group" data-link-id="built-in-2">
+                  <div class="flex items-start">
+                     <a href="https://www.coursera.org" target="_blank"
+                        class="flex-1 flex items-start link-transition group-hover:text-primary">
+                        <i class="fa fa-external-link text-sm mt-1 mr-2 text-gray-400 dark-text-gray-500 group-hover:text-primary/70"
+                           aria-hidden="true"></i>
+                        <div>
+                           <span class="font-medium block">Coursera</span>
+                           <span class="text-gray-600 dark-text-gray-300 text-sm mt-1 block">大学与机构的在线课程平台</span>
+                        </div>
+                     </a>
+                     <button class="delete-link-btn delete-btn" data-id="built-in-2" disabled>
+                        <i class="fa fa-trash-o" aria-hidden="true"></i>
+                     </button>
+                  </div>
                </div>
-               <div class="link group">
-                  <a href="https://github.com" target="_blank"
-                     class="flex items-start link-transition group-hover:text-primary">
-                     <i class="fa fa-external-link text-sm mt-1 mr-2 text-gray-400 dark-text-gray-500 group-hover:text-primary/70"
-                        aria-hidden="true"></i>
-                     <div>
-                        <span class="font-medium block">GitHub</span>
-                        <span class="text-gray-600 dark-text-gray-300 text-sm mt-1 block">代码托管与项目协作（开发资源）</span>
-                     </div>
-                  </a>
+               <div class="link group" data-link-id="built-in-3">
+                  <div class="flex items-start">
+                     <a href="https://github.com" target="_blank"
+                        class="flex-1 flex items-start link-transition group-hover:text-primary">
+                        <i class="fa fa-external-link text-sm mt-1 mr-2 text-gray-400 dark-text-gray-500 group-hover:text-primary/70"
+                           aria-hidden="true"></i>
+                        <div>
+                           <span class="font-medium block">GitHub</span>
+                           <span class="text-gray-600 dark-text-gray-300 text-sm mt-1 block">代码托管与项目协作（开发资源）</span>
+                        </div>
+                     </a>
+                     <button class="delete-link-btn delete-btn" data-id="built-in-3" disabled>
+                        <i class="fa fa-trash-o" aria-hidden="true"></i>
+                     </button>
+                  </div>
                </div>
             </div>
          </div>
@@ -243,38 +288,53 @@
                </h2>
             </div>
             <div class="category-content p-6 space-y-4" data-category="设计资源">
-               <div class="link group">
-                  <a href="https://www.figma.com" target="_blank"
-                     class="flex items-start link-transition group-hover:text-secondary">
-                     <i class="fa fa-external-link text-sm mt-1 mr-2 text-gray-400 dark-text-gray-500 group-hover:text-secondary/70"
-                        aria-hidden="true"></i>
-                     <div>
-                        <span class="font-medium block">Figma</span>
-                        <span class="text-gray-600 dark-text-gray-300 text-sm mt-1 block">协作式界面设计工具</span>
-                     </div>
-                  </a>
+               <div class="link group" data-link-id="built-in-4">
+                  <div class="flex items-start">
+                     <a href="https://www.figma.com" target="_blank"
+                        class="flex-1 flex items-start link-transition group-hover:text-secondary">
+                        <i class="fa fa-external-link text-sm mt-1 mr-2 text-gray-400 dark-text-gray-500 group-hover:text-secondary/70"
+                           aria-hidden="true"></i>
+                        <div>
+                           <span class="font-medium block">Figma</span>
+                           <span class="text-gray-600 dark-text-gray-300 text-sm mt-1 block">协作式界面设计工具</span>
+                        </div>
+                     </a>
+                     <button class="delete-link-btn delete-btn" data-id="built-in-4" disabled>
+                        <i class="fa fa-trash-o" aria-hidden="true"></i>
+                     </button>
+                  </div>
                </div>
-               <div class="link group">
-                  <a href="https://unsplash.com" target="_blank"
-                     class="flex items-start link-transition group-hover:text-secondary">
-                     <i class="fa fa-external-link text-sm mt-1 mr-2 text-gray-400 dark-text-gray-500 group-hover:text-secondary/70"
-                        aria-hidden="true"></i>
-                     <div>
-                        <span class="font-medium block">Unsplash</span>
-                        <span class="text-gray-600 dark-text-gray-300 text-sm mt-1 block">高质量免版权图片素材</span>
-                     </div>
-                  </a>
+               <div class="link group" data-link-id="built-in-5">
+                  <div class="flex items-start">
+                     <a href="https://unsplash.com" target="_blank"
+                        class="flex-1 flex items-start link-transition group-hover:text-secondary">
+                        <i class="fa fa-external-link text-sm mt-1 mr-2 text-gray-400 dark-text-gray-500 group-hover:text-secondary/70"
+                           aria-hidden="true"></i>
+                        <div>
+                           <span class="font-medium block">Unsplash</span>
+                           <span class="text-gray-600 dark-text-gray-300 text-sm mt-1 block">高质量免版权图片素材</span>
+                        </div>
+                     </a>
+                     <button class="delete-link-btn delete-btn" data-id="built-in-5" disabled>
+                        <i class="fa fa-trash-o" aria-hidden="true"></i>
+                     </button>
+                  </div>
                </div>
-               <div class="link group">
-                  <a href="https://fonts.google.com" target="_blank"
-                     class="flex items-start link-transition group-hover:text-secondary">
-                     <i class="fa fa-external-link text-sm mt-1 mr-2 text-gray-400 dark-text-gray-500 group-hover:text-secondary/70"
-                        aria-hidden="true"></i>
-                     <div>
-                        <span class="font-medium block">Google Fonts</span>
-                        <span class="text-gray-600 dark-text-gray-300 text-sm mt-1 block">免费 Web 与桌面字体库</span>
-                     </div>
-                  </a>
+               <div class="link group" data-link-id="built-in-6">
+                  <div class="flex items-start">
+                     <a href="https://fonts.google.com" target="_blank"
+                        class="flex-1 flex items-start link-transition group-hover:text-secondary">
+                        <i class="fa fa-external-link text-sm mt-1 mr-2 text-gray-400 dark-text-gray-500 group-hover:text-secondary/70"
+                           aria-hidden="true"></i>
+                        <div>
+                           <span class="font-medium block">Google Fonts</span>
+                           <span class="text-gray-600 dark-text-gray-300 text-sm mt-1 block">免费 Web 与桌面字体库</span>
+                        </div>
+                     </a>
+                     <button class="delete-link-btn delete-btn" data-id="built-in-6" disabled>
+                        <i class="fa fa-trash-o" aria-hidden="true"></i>
+                     </button>
+                  </div>
                </div>
             </div>
          </div>
@@ -289,38 +349,53 @@
                </h2>
             </div>
             <div class="category-content p-6 space-y-4" data-category="日常常用">
-               <div class="link group">
-                  <a href="https://www.weibo.com" target="_blank"
-                     class="flex items-start link-transition group-hover:text-accent">
-                     <i class="fa fa-external-link text-sm mt-1 mr-2 text-gray-400 dark-text-gray-500 group-hover:text-accent/70"
-                        aria-hidden="true"></i>
-                     <div>
-                        <span class="font-medium block">微博</span>
-                        <span class="text-gray-600 dark-text-gray-300 text-sm mt-1 block">热门中文社交平台</span>
-                     </div>
-                  </a>
+               <div class="link group" data-link-id="built-in-7">
+                  <div class="flex items-start">
+                     <a href="https://www.weibo.com" target="_blank"
+                        class="flex-1 flex items-start link-transition group-hover:text-accent">
+                        <i class="fa fa-external-link text-sm mt-1 mr-2 text-gray-400 dark-text-gray-500 group-hover:text-accent/70"
+                           aria-hidden="true"></i>
+                        <div>
+                           <span class="font-medium block">微博</span>
+                           <span class="text-gray-600 dark-text-gray-300 text-sm mt-1 block">热门中文社交平台</span>
+                        </div>
+                     </a>
+                     <button class="delete-link-btn delete-btn" data-id="built-in-7" disabled>
+                        <i class="fa fa-trash-o" aria-hidden="true"></i>
+                     </button>
+                  </div>
                </div>
-               <div class="link group">
-                  <a href="https://www.taobao.com" target="_blank"
-                     class="flex items-start link-transition group-hover:text-accent">
-                     <i class="fa fa-external-link text-sm mt-1 mr-2 text-gray-400 dark-text-gray-500 group-hover:text-accent/70"
-                        aria-hidden="true"></i>
-                     <div>
-                        <span class="font-medium block">淘宝</span>
-                        <span class="text-gray-600 dark-text-gray-300 text-sm mt-1 block">大型购物平台</span>
-                     </div>
-                  </a>
+               <div class="link group" data-link-id="built-in-8">
+                  <div class="flex items-start">
+                     <a href="https://www.taobao.com" target="_blank"
+                        class="flex-1 flex items-start link-transition group-hover:text-accent">
+                        <i class="fa fa-external-link text-sm mt-1 mr-2 text-gray-400 dark-text-gray-500 group-hover:text-accent/70"
+                           aria-hidden="true"></i>
+                        <div>
+                           <span class="font-medium block">淘宝</span>
+                           <span class="text-gray-600 dark-text-gray-300 text-sm mt-1 block">大型购物平台</span>
+                        </div>
+                     </a>
+                     <button class="delete-link-btn delete-btn" data-id="built-in-8" disabled>
+                        <i class="fa fa-trash-o" aria-hidden="true"></i>
+                     </button>
+                  </div>
                </div>
-               <div class="link group">
-                  <a href="https://news.baidu.com" target="_blank"
-                     class="flex items-start link-transition group-hover:text-accent">
-                     <i class="fa fa-external-link text-sm mt-1 mr-2 text-gray-400 dark-text-gray-500 group-hover:text-accent/70"
-                        aria-hidden="true"></i>
-                     <div>
-                        <span class="font-medium block">百度新闻</span>
-                        <span class="text-gray-600 dark-text-gray-300 text-sm mt-1 block">聚合新闻与资讯</span>
-                     </div>
-                  </a>
+               <div class="link group" data-link-id="built-in-9">
+                  <div class="flex items-start">
+                     <a href="https://news.baidu.com" target="_blank"
+                        class="flex-1 flex items-start link-transition group-hover:text-accent">
+                        <i class="fa fa-external-link text-sm mt-1 mr-2 text-gray-400 dark-text-gray-500 group-hover:text-accent/70"
+                           aria-hidden="true"></i>
+                        <div>
+                           <span class="font-medium block">百度新闻</span>
+                           <span class="text-gray-600 dark-text-gray-300 text-sm mt-1 block">聚合新闻与资讯</span>
+                        </div>
+                     </a>
+                     <button class="delete-link-btn delete-btn" data-id="built-in-9" disabled>
+                        <i class="fa fa-trash-o" aria-hidden="true"></i>
+                     </button>
+                  </div>
                </div>
             </div>
          </div>
@@ -335,38 +410,53 @@
                </h2>
             </div>
             <div class="category-content p-6 space-y-4" data-category="娱乐休闲">
-               <div class="link group">
-                  <a href="https://www.bilibili.com" target="_blank"
-                     class="flex items-start link-transition group-hover:text-green-500">
-                     <i class="fa fa-external-link text-sm mt-1 mr-2 text-gray-400 dark-text-gray-500 group-hover:text-green-500/70"
-                        aria-hidden="true"></i>
-                     <div>
-                        <span class="font-medium block">哔哩哔哩</span>
-                        <span class="text-gray-600 dark-text-gray-300 text-sm mt-1 block">年轻人的文化社区</span>
-                     </div>
-                  </a>
+               <div class="link group" data-link-id="built-in-10">
+                  <div class="flex items-start">
+                     <a href="https://www.bilibili.com" target="_blank"
+                        class="flex-1 flex items-start link-transition group-hover:text-green-500">
+                        <i class="fa fa-external-link text-sm mt-1 mr-2 text-gray-400 dark-text-gray-500 group-hover:text-green-500/70"
+                           aria-hidden="true"></i>
+                        <div>
+                           <span class="font-medium block">哔哩哔哩</span>
+                           <span class="text-gray-600 dark-text-gray-300 text-sm mt-1 block">年轻人的文化社区</span>
+                        </div>
+                     </a>
+                     <button class="delete-link-btn delete-btn" data-id="built-in-10" disabled>
+                        <i class="fa fa-trash-o" aria-hidden="true"></i>
+                     </button>
+                  </div>
                </div>
-               <div class="link group">
-                  <a href="https://www.netflix.com" target="_blank"
-                     class="flex items-start link-transition group-hover:text-green-500">
-                     <i class="fa fa-external-link text-sm mt-1 mr-2 text-gray-400 dark-text-gray-500 group-hover:text-green-500/70"
-                        aria-hidden="true"></i>
-                     <div>
-                        <span class="font-medium block">Netflix</span>
-                        <span class="text-gray-600 dark-text-gray-300 text-sm mt-1 block">流媒体视频平台</span>
-                     </div>
-                  </a>
+               <div class="link group" data-link-id="built-in-11">
+                  <div class="flex items-start">
+                     <a href="https://www.netflix.com" target="_blank"
+                        class="flex-1 flex items-start link-transition group-hover:text-green-500">
+                        <i class="fa fa-external-link text-sm mt-1 mr-2 text-gray-400 dark-text-gray-500 group-hover:text-green-500/70"
+                           aria-hidden="true"></i>
+                        <div>
+                           <span class="font-medium block">Netflix</span>
+                           <span class="text-gray-600 dark-text-gray-300 text-sm mt-1 block">流媒体视频平台</span>
+                        </div>
+                     </a>
+                     <button class="delete-link-btn delete-btn" data-id="built-in-11" disabled>
+                        <i class="fa fa-trash-o" aria-hidden="true"></i>
+                     </button>
+                  </div>
                </div>
-               <div class="link group">
-                  <a href="https://music.163.com" target="_blank"
-                     class="flex items-start link-transition group-hover:text-green-500">
-                     <i class="fa fa-external-link text-sm mt-1 mr-2 text-gray-400 dark-text-gray-500 group-hover:text-green-500/70"
-                        aria-hidden="true"></i>
-                     <div>
-                        <span class="font-medium block">网易云音乐</span>
-                        <span class="text-gray-600 dark-text-gray-300 text-sm mt-1 block">音乐播放与分享平台</span>
-                     </div>
-                  </a>
+               <div class="link group" data-link-id="built-in-12">
+                  <div class="flex items-start">
+                     <a href="https://music.163.com" target="_blank"
+                        class="flex-1 flex items-start link-transition group-hover:text-green-500">
+                        <i class="fa fa-external-link text-sm mt-1 mr-2 text-gray-400 dark-text-gray-500 group-hover:text-green-500/70"
+                           aria-hidden="true"></i>
+                        <div>
+                           <span class="font-medium block">网易云音乐</span>
+                           <span class="text-gray-600 dark-text-gray-300 text-sm mt-1 block">音乐播放与分享平台</span>
+                        </div>
+                     </a>
+                     <button class="delete-link-btn delete-btn" data-id="built-in-12" disabled>
+                        <i class="fa fa-trash-o" aria-hidden="true"></i>
+                     </button>
+                  </div>
                </div>
             </div>
          </div>
@@ -381,38 +471,53 @@
                </h2>
             </div>
             <div class="category-content p-6 space-y-4" data-category="办公效率">
-               <div class="link group">
-                  <a href="https://docs.google.com" target="_blank"
-                     class="flex items-start link-transition group-hover:text-orange-500">
-                     <i class="fa fa-external-link text-sm mt-1 mr-2 text-gray-400 dark-text-gray-500 group-hover:text-orange-500/70"
-                        aria-hidden="true"></i>
-                     <div>
-                        <span class="font-medium block">Google 文档</span>
-                        <span class="text-gray-600 dark-text-gray-300 text-sm mt-1 block">在线文档协作工具</span>
-                     </div>
-                  </a>
+               <div class="link group" data-link-id="built-in-13">
+                  <div class="flex items-start">
+                     <a href="https://docs.google.com" target="_blank"
+                        class="flex-1 flex items-start link-transition group-hover:text-orange-500">
+                        <i class="fa fa-external-link text-sm mt-1 mr-2 text-gray-400 dark-text-gray-500 group-hover:text-orange-500/70"
+                           aria-hidden="true"></i>
+                        <div>
+                           <span class="font-medium block">Google 文档</span>
+                           <span class="text-gray-600 dark-text-gray-300 text-sm mt-1 block">在线文档协作工具</span>
+                        </div>
+                     </a>
+                     <button class="delete-link-btn delete-btn" data-id="built-in-13" disabled>
+                        <i class="fa fa-trash-o" aria-hidden="true"></i>
+                     </button>
+                  </div>
                </div>
-               <div class="link group">
-                  <a href="https://notion.so" target="_blank"
-                     class="flex items-start link-transition group-hover:text-orange-500">
-                     <i class="fa fa-external-link text-sm mt-1 mr-2 text-gray-400 dark-text-gray-500 group-hover:text-orange-500/70"
-                        aria-hidden="true"></i>
-                     <div>
-                        <span class="font-medium block">Notion</span>
-                        <span class="text-gray-600 dark-text-gray-300 text-sm mt-1 block">全能工作空间</span>
-                     </div>
-                  </a>
+               <div class="link group" data-link-id="built-in-14">
+                  <div class="flex items-start">
+                     <a href="https://notion.so" target="_blank"
+                        class="flex-1 flex items-start link-transition group-hover:text-orange-500">
+                        <i class="fa fa-external-link text-sm mt-1 mr-2 text-gray-400 dark-text-gray-500 group-hover:text-orange-500/70"
+                           aria-hidden="true"></i>
+                        <div>
+                           <span class="font-medium block">Notion</span>
+                           <span class="text-gray-600 dark-text-gray-300 text-sm mt-1 block">全能工作空间</span>
+                        </div>
+                     </a>
+                     <button class="delete-link-btn delete-btn" data-id="built-in-14" disabled>
+                        <i class="fa fa-trash-o" aria-hidden="true"></i>
+                     </button>
+                  </div>
                </div>
-               <div class="link group">
-                  <a href="https://www.dropbox.com" target="_blank"
-                     class="flex items-start link-transition group-hover:text-orange-500">
-                     <i class="fa fa-external-link text-sm mt-1 mr-2 text-gray-400 dark-text-gray-500 group-hover:text-orange-500/70"
-                        aria-hidden="true"></i>
-                     <div>
-                        <span class="font-medium block">Dropbox</span>
-                        <span class="text-gray-600 dark-text-gray-300 text-sm mt-1 block">云存储与文件共享</span>
-                     </div>
-                  </a>
+               <div class="link group" data-link-id="built-in-15">
+                  <div class="flex items-start">
+                     <a href="https://www.dropbox.com" target="_blank"
+                        class="flex-1 flex items-start link-transition group-hover:text-orange-500">
+                        <i class="fa fa-external-link text-sm mt-1 mr-2 text-gray-400 dark-text-gray-500 group-hover:text-orange-500/70"
+                           aria-hidden="true"></i>
+                        <div>
+                           <span class="font-medium block">Dropbox</span>
+                           <span class="text-gray-600 dark-text-gray-300 text-sm mt-1 block">云存储与文件共享</span>
+                        </div>
+                     </a>
+                     <button class="delete-link-btn delete-btn" data-id="built-in-15" disabled>
+                        <i class="fa fa-trash-o" aria-hidden="true"></i>
+                     </button>
+                  </div>
                </div>
             </div>
          </div>
@@ -427,38 +532,53 @@
                </h2>
             </div>
             <div class="category-content p-6 space-y-4" data-category="实用工具">
-               <div class="link group">
-                  <a href="https://www.baidu.com" target="_blank"
-                     class="flex items-start link-transition group-hover:text-red-500">
-                     <i class="fa fa-external-link text-sm mt-1 mr-2 text-gray-400 dark-text-gray-500 group-hover:text-red-500/70"
-                        aria-hidden="true"></i>
-                     <div>
-                        <span class="font-medium block">百度搜索</span>
-                        <span class="text-gray-600 dark-text-gray-300 text-sm mt-1 block">中文搜索引擎</span>
-                     </div>
-                  </a>
+               <div class="link group" data-link-id="built-in-16">
+                  <div class="flex items-start">
+                     <a href="https://www.baidu.com" target="_blank"
+                        class="flex-1 flex items-start link-transition group-hover:text-red-500">
+                        <i class="fa fa-external-link text-sm mt-1 mr-2 text-gray-400 dark-text-gray-500 group-hover:text-red-500/70"
+                           aria-hidden="true"></i>
+                        <div>
+                           <span class="font-medium block">百度搜索</span>
+                           <span class="text-gray-600 dark-text-gray-300 text-sm mt-1 block">中文搜索引擎</span>
+                        </div>
+                     </a>
+                     <button class="delete-link-btn delete-btn" data-id="built-in-16" disabled>
+                        <i class="fa fa-trash-o" aria-hidden="true"></i>
+                     </button>
+                  </div>
                </div>
-               <div class="link group">
-                  <a href="https://translate.google.cn" target="_blank"
-                     class="flex items-start link-transition group-hover:text-red-500">
-                     <i class="fa fa-external-link text-sm mt-1 mr-2 text-gray-400 dark-text-gray-500 group-hover:text-red-500/70"
-                        aria-hidden="true"></i>
-                     <div>
-                        <span class="font-medium block">Google 翻译</span>
-                        <span class="text-gray-600 dark-text-gray-300 text-sm mt-1 block">多语言翻译工具</span>
-                     </div>
-                  </a>
+               <div class="link group" data-link-id="built-in-17">
+                  <div class="flex items-start">
+                     <a href="https://translate.google.cn" target="_blank"
+                        class="flex-1 flex items-start link-transition group-hover:text-red-500">
+                        <i class="fa fa-external-link text-sm mt-1 mr-2 text-gray-400 dark-text-gray-500 group-hover:text-red-500/70"
+                           aria-hidden="true"></i>
+                        <div>
+                           <span class="font-medium block">Google 翻译</span>
+                           <span class="text-gray-600 dark-text-gray-300 text-sm mt-1 block">多语言翻译工具</span>
+                        </div>
+                     </a>
+                     <button class="delete-link-btn delete-btn" data-id="built-in-17" disabled>
+                        <i class="fa fa-trash-o" aria-hidden="true"></i>
+                     </button>
+                  </div>
                </div>
-               <div class="link group">
-                  <a href="https://www.weather.com" target="_blank"
-                     class="flex items-start link-transition group-hover:text-red-500">
-                     <i class="fa fa-external-link text-sm mt-1 mr-2 text-gray-400 dark-text-gray-500 group-hover:text-red-500/70"
-                        aria-hidden="true"></i>
-                     <div>
-                        <span class="font-medium block">天气查询</span>
-                        <span class="text-gray-600 dark-text-gray-300 text-sm mt-1 block">全球天气预报</span>
-                     </div>
-                  </a>
+               <div class="link group" data-link-id="built-in-18">
+                  <div class="flex items-start">
+                     <a href="https://www.weather.com" target="_blank"
+                        class="flex-1 flex items-start link-transition group-hover:text-red-500">
+                        <i class="fa fa-external-link text-sm mt-1 mr-2 text-gray-400 dark-text-gray-500 group-hover:text-red-500/70"
+                           aria-hidden="true"></i>
+                        <div>
+                           <span class="font-medium block">天气查询</span>
+                           <span class="text-gray-600 dark-text-gray-300 text-sm mt-1 block">全球天气预报</span>
+                        </div>
+                     </a>
+                     <button class="delete-link-btn delete-btn" data-id="built-in-18" disabled>
+                        <i class="fa fa-trash-o" aria-hidden="true"></i>
+                     </button>
+                  </div>
                </div>
             </div>
          </div>
@@ -473,38 +593,53 @@
                </h2>
             </div>
             <div class="category-content p-6 space-y-4" data-category="编程资源">
-               <div class="link group">
-                  <a href="https://leetcode.cn" target="_blank"
-                     class="flex items-start link-transition group-hover:text-blue-600">
-                     <i class="fa fa-external-link text-sm mt-1 mr-2 text-gray-400 dark-text-gray-500 group-hover:text-blue-600/70"
-                        aria-hidden="true"></i>
-                     <div>
-                        <span class="font-medium block">LeetCode</span>
-                        <span class="text-gray-600 dark-text-gray-300 text-sm mt-1 block">程序员算法刷题平台</span>
-                     </div>
-                  </a>
+               <div class="link group" data-link-id="built-in-19">
+                  <div class="flex items-start">
+                     <a href="https://leetcode.cn" target="_blank"
+                        class="flex-1 flex items-start link-transition group-hover:text-blue-600">
+                        <i class="fa fa-external-link text-sm mt-1 mr-2 text-gray-400 dark-text-gray-500 group-hover:text-blue-600/70"
+                           aria-hidden="true"></i>
+                        <div>
+                           <span class="font-medium block">LeetCode</span>
+                           <span class="text-gray-600 dark-text-gray-300 text-sm mt-1 block">程序员算法刷题平台</span>
+                        </div>
+                     </a>
+                     <button class="delete-link-btn delete-btn" data-id="built-in-19" disabled>
+                        <i class="fa fa-trash-o" aria-hidden="true"></i>
+                     </button>
+                  </div>
                </div>
-               <div class="link group">
-                  <a href="https://developer.mozilla.org" target="_blank"
-                     class="flex items-start link-transition group-hover:text-blue-600">
-                     <i class="fa fa-external-link text-sm mt-1 mr-2 text-gray-400 dark-text-gray-500 group-hover:text-blue-600/70"
-                        aria-hidden="true"></i>
-                     <div>
-                        <span class="font-medium block">MDN Web Docs</span>
-                        <span class="text-gray-600 dark-text-gray-300 text-sm mt-1 block">Web开发技术文档库</span>
-                     </div>
-                  </a>
+               <div class="link group" data-link-id="built-in-20">
+                  <div class="flex items-start">
+                     <a href="https://developer.mozilla.org" target="_blank"
+                        class="flex-1 flex items-start link-transition group-hover:text-blue-600">
+                        <i class="fa fa-external-link text-sm mt-1 mr-2 text-gray-400 dark-text-gray-500 group-hover:text-blue-600/70"
+                           aria-hidden="true"></i>
+                        <div>
+                           <span class="font-medium block">MDN Web Docs</span>
+                           <span class="text-gray-600 dark-text-gray-300 text-sm mt-1 block">Web开发技术文档库</span>
+                        </div>
+                     </a>
+                     <button class="delete-link-btn delete-btn" data-id="built-in-20" disabled>
+                        <i class="fa fa-trash-o" aria-hidden="true"></i>
+                     </button>
+                  </div>
                </div>
-               <div class="link group">
-                  <a href="https://stackoverflow.com" target="_blank"
-                     class="flex items-start link-transition group-hover:text-blue-600">
-                     <i class="fa fa-external-link text-sm mt-1 mr-2 text-gray-400 dark-text-gray-500 group-hover:text-blue-600/70"
-                        aria-hidden="true"></i>
-                     <div>
-                        <span class="font-medium block">Stack Overflow</span>
-                        <span class="text-gray-600 dark-text-gray-300 text-sm mt-1 block">程序员问答社区</span>
-                     </div>
-                  </a>
+               <div class="link group" data-link-id="built-in-21">
+                  <div class="flex items-start">
+                     <a href="https://stackoverflow.com" target="_blank"
+                        class="flex-1 flex items-start link-transition group-hover:text-blue-600">
+                        <i class="fa fa-external-link text-sm mt-1 mr-2 text-gray-400 dark-text-gray-500 group-hover:text-blue-600/70"
+                           aria-hidden="true"></i>
+                        <div>
+                           <span class="font-medium block">Stack Overflow</span>
+                           <span class="text-gray-600 dark-text-gray-300 text-sm mt-1 block">程序员问答社区</span>
+                        </div>
+                     </a>
+                     <button class="delete-link-btn delete-btn" data-id="built-in-21" disabled>
+                        <i class="fa fa-trash-o" aria-hidden="true"></i>
+                     </button>
+                  </div>
                </div>
             </div>
          </div>
@@ -563,7 +698,7 @@
                <h4 class="font-medium text-gray-800 dark:text-white mb-2">个人简介</h4>
                <p class="text-gray-600 dark-text-gray-300 text-sm leading-relaxed">
                   热衷于前端开发、UI/UX设计与技术分享，喜欢收集和整理各类实用工具与资源。
-                  这个收藏夹是我日常使用的优质网站汇总，希望也能对你有所帮助！
+                  这个收藏夹是我日常使用的优质网站汇总，支持添加/删除自定义网址（需密码验证），所有数据存储在本地浏览器中，安全隐私。
                   欢迎通过上面的联系方式与我交流学习 🤝
                </p>
             </div>
@@ -586,7 +721,7 @@
          <div class="flex flex-col md:flex-row justify-between items-center">
             <div class="mb-4 md:mb-0">
                <p class="text-gray-400">© 2025 EmberSalut的网址收藏夹</p>
-               <p class="text-gray-500 text-sm mt-1">一个简洁高效的个人网址管理工具 | 数据存储在本地浏览器</p>
+               <p class="text-gray-500 text-sm mt-1">一个简洁高效的个人网址管理工具 | 数据存储在本地浏览器 | 支持增删自定义网址</p>
             </div>
             <div class="flex space-x-4">
                <a href="https://github.com/EmberSalut" target="_blank"
@@ -609,7 +744,8 @@
       // 配置项（可修改这里的密码）
       const CONFIG = {
          ADMIN_PASSWORD: '123456', // 默认密码，建议修改为自己的密码
-         STORAGE_KEY: 'bookmark_links' // 本地存储键名
+         STORAGE_KEY: 'bookmark_links', // 本地存储键名
+         BUILT_IN_LINK_PREFIX: 'built-in-' // 内置链接ID前缀（不可删除）
       };
 
       // DOM元素
@@ -629,6 +765,17 @@
       const cancelPasswordBtn = document.getElementById('cancelPasswordBtn');
       const closeAddLinkModalBtn = document.getElementById('closeAddLinkModalBtn');
       const successModal = document.getElementById('successModal');
+      const errorModal = document.getElementById('errorModal');
+      const deleteConfirmModal = document.getElementById('deleteConfirmModal');
+      const deleteConfirmModalContent = document.getElementById('deleteConfirmModalContent');
+      const deleteLinkId = document.getElementById('deleteLinkId');
+      const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+      const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
+      const deleteLinkBtns = document.querySelectorAll('.delete-link-btn');
+
+      // 全局变量
+      let currentOperation = ''; // 记录当前需要密码验证的操作：add/delete
+      let currentDeleteLinkId = ''; // 记录当前要删除的链接ID
 
       // 初始化：从本地存储加载自定义链接
       function init() {
@@ -646,22 +793,43 @@
          });
       }
 
-      // 添加链接到对应分类
+      // 添加链接到对应分类（支持删除按钮）
       function addLinkToCategory(link) {
          const categoryContent = document.querySelector(`.category-content[data-category="${link.category}"]`);
          if (categoryContent) {
             const linkElement = document.createElement('div');
             linkElement.className = 'link group';
+            linkElement.setAttribute('data-link-id', link.id);
+
+            // 自定义链接显示删除按钮，内置链接禁用删除
+            const isBuiltIn = link.id.startsWith(CONFIG.BUILT_IN_LINK_PREFIX);
+            const deleteBtnHtml = isBuiltIn
+               ? `<button class="delete-link-btn delete-btn" data-id="${link.id}" disabled><i class="fa fa-trash-o" aria-hidden="true"></i></button>`
+               : `<button class="delete-link-btn delete-btn" data-id="${link.id}"><i class="fa fa-trash-o" aria-hidden="true"></i></button>`;
+
             linkElement.innerHTML = `
-                    <a href="${link.url}" target="_blank" class="flex items-start link-transition group-hover:text-${getCategoryColor(link.category)}">
-                        <i class="fa fa-external-link text-sm mt-1 mr-2 text-gray-400 dark-text-gray-500 group-hover:text-${getCategoryColor(link.category)}/70" aria-hidden="true"></i>
-                        <div>
-                            <span class="font-medium block">${link.name}</span>
-                            <span class="text-gray-600 dark-text-gray-300 text-sm mt-1 block">${link.desc || '无描述'}</span>
-                        </div>
-                    </a>
+                    <div class="flex items-start">
+                        <a href="${link.url}" target="_blank" class="flex-1 flex items-start link-transition group-hover:text-${getCategoryColor(link.category)}">
+                            <i class="fa fa-external-link text-sm mt-1 mr-2 text-gray-400 dark-text-gray-500 group-hover:text-${getCategoryColor(link.category)}/70" aria-hidden="true"></i>
+                            <div>
+                                <span class="font-medium block">${link.name}</span>
+                                <span class="text-gray-600 dark-text-gray-300 text-sm mt-1 block">${link.desc || '无描述'}</span>
+                            </div>
+                        </a>
+                        ${deleteBtnHtml}
+                    </div>
                 `;
             categoryContent.appendChild(linkElement);
+
+            // 绑定新添加链接的删除按钮事件
+            if (!isBuiltIn) {
+               linkElement.querySelector('.delete-link-btn').addEventListener('click', function (e) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  currentDeleteLinkId = link.id;
+                  openDeleteConfirmModal();
+               });
+            }
          }
       }
 
@@ -679,6 +847,11 @@
          return colorMap[category] || 'primary';
       }
 
+      // 生成唯一链接ID
+      function generateLinkId() {
+         return 'custom-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
+      }
+
       // 初始化主题
       function initTheme() {
          const isDarkMode = localStorage.getItem('dark_mode') === 'true';
@@ -693,164 +866,4 @@
 
       // 初始化搜索功能
       function initSearch() {
-         searchBox.addEventListener('input', function () {
-            const filter = searchBox.value.toLowerCase().trim();
-            let hasVisibleCategories = false;
-
-            categories.forEach(category => {
-               const links = category.querySelectorAll('.link');
-               let hasVisibleLinks = false;
-
-               links.forEach(link => {
-                  const linkText = link.innerText.toLowerCase();
-                  const isVisible = linkText.includes(filter);
-                  link.style.display = isVisible ? 'block' : 'none';
-                  if (isVisible) hasVisibleLinks = true;
-               });
-
-               category.style.display = hasVisibleLinks ? 'block' : 'none';
-               if (hasVisibleLinks) hasVisibleCategories = true;
-            });
-
-            noResults.style.display = hasVisibleCategories ? 'none' : 'block';
-         });
-      }
-
-      // 绑定所有事件
-      function bindEvents() {
-         // 新增网址按钮点击
-         addLinkBtn.addEventListener('click', openPasswordModal);
-
-         // 主题切换
-         themeToggle.addEventListener('click', toggleTheme);
-
-         // 密码验证确认
-         confirmPasswordBtn.addEventListener('click', verifyPassword);
-
-         // 密码验证取消
-         cancelPasswordBtn.addEventListener('click', closePasswordModal);
-
-         // 关闭新增网址弹窗
-         closeAddLinkModalBtn.addEventListener('click', closeAddLinkModal);
-
-         // 提交新增网址表单
-         addLinkForm.addEventListener('submit', function (e) {
-            e.preventDefault();
-            saveNewLink();
-         });
-
-         // 点击模态框背景关闭
-         passwordModal.addEventListener('click', function (e) {
-            if (e.target === passwordModal) closePasswordModal();
-         });
-
-         addLinkModal.addEventListener('click', function (e) {
-            if (e.target === addLinkModal) closeAddLinkModal();
-         });
-      }
-
-      // 打开密码验证弹窗
-      function openPasswordModal() {
-         passwordModal.classList.remove('hidden');
-         setTimeout(() => {
-            passwordModalContent.classList.add('modal-enter');
-         }, 10);
-         adminPassword.value = '';
-         passwordError.classList.add('hidden');
-         adminPassword.focus();
-      }
-
-      // 关闭密码验证弹窗
-      function closePasswordModal() {
-         passwordModalContent.classList.remove('modal-enter');
-         setTimeout(() => {
-            passwordModal.classList.add('hidden');
-         }, 300);
-      }
-
-      // 打开新增网址弹窗
-      function openAddLinkModal() {
-         closePasswordModal();
-         addLinkModal.classList.remove('hidden');
-         setTimeout(() => {
-            addLinkModalContent.classList.add('modal-enter');
-         }, 10);
-         addLinkForm.reset();
-      }
-
-      // 关闭新增网址弹窗
-      function closeAddLinkModal() {
-         addLinkModalContent.classList.remove('modal-enter');
-         setTimeout(() => {
-            addLinkModal.classList.add('hidden');
-         }, 300);
-      }
-
-      // 验证密码
-      function verifyPassword() {
-         const password = adminPassword.value.trim();
-         if (password === CONFIG.ADMIN_PASSWORD) {
-            openAddLinkModal();
-         } else {
-            passwordError.classList.remove('hidden');
-            adminPassword.focus();
-         }
-      }
-
-      // 保存新链接
-      function saveNewLink() {
-         const formData = new FormData(addLinkForm);
-         const newLink = {
-            name: formData.get('linkName').trim(),
-            url: formData.get('linkUrl').trim(),
-            category: formData.get('linkCategory'),
-            desc: formData.get('linkDesc').trim()
-         };
-
-         // 保存到本地存储
-         const customLinks = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEY) || '[]');
-         customLinks.push(newLink);
-         localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(customLinks));
-
-         // 添加到页面
-         addLinkToCategory(newLink);
-
-         // 关闭弹窗并显示成功提示
-         closeAddLinkModal();
-         showSuccessMessage('网址添加成功！');
-      }
-
-      // 显示成功提示
-      function showSuccessMessage(msg) {
-         const successMsg = document.getElementById('successMsg');
-         successMsg.textContent = msg;
-         successModal.classList.remove('hidden');
-         setTimeout(() => {
-            successModal.classList.add('opacity-0');
-            setTimeout(() => {
-               successModal.classList.add('hidden');
-               successModal.classList.remove('opacity-0');
-            }, 300);
-         }, 2000);
-      }
-
-      // 切换主题
-      function toggleTheme() {
-         const isDarkMode = document.body.classList.contains('dark-mode');
-         if (isDarkMode) {
-            document.body.classList.remove('dark-mode');
-            localStorage.setItem('dark_mode', 'false');
-            themeToggle.innerHTML = '<i class="fa fa-moon-o text-xl" aria-hidden="true"></i>';
-         } else {
-            document.body.classList.add('dark-mode');
-            localStorage.setItem('dark_mode', 'true');
-            themeToggle.innerHTML = '<i class="fa fa-sun-o text-xl" aria-hidden="true"></i>';
-         }
-      }
-
-      // 页面加载完成后初始化
-      window.addEventListener('load', init);
-   </script>
-</body>
-
-</html>
+         searchBox.addEventListener('input
