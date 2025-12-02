@@ -4,43 +4,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>我的清新收藏夹 - My Fresh Links</title>
+    <meta name="description" content="一个简洁、清新且完全响应式的个人网页收藏夹/导航页。">
+    <title>我的数字花园 - My Fresh Links</title>
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌱</text></svg>">
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 
 <body>
     <header class="header">
-        <h1>🌱 收藏夹 | Links</h1>
-        <p id="current-time">加载中...</p>
+        <div class="header-content">
+            <h1>🌱 数字花园</h1>
+            <p id="current-time">加载中...</p>
+        </div>
+        <button id="theme-toggle" class="theme-toggle" aria-label="切换主题">
+            <i class="fas fa-moon"></i>
+        </button>
     </header>
 
     <div class="container">
         <div class="search-box">
-            <input type="text" id="searchInput" placeholder="快速搜索 (输入后回车搜索 Google)">
+            <div class="search-wrapper">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" id="searchInput" placeholder="Search Google..." autocomplete="off">
+            </div>
             <button onclick="performSearch()">搜索</button>
         </div>
 
-        <section class="add-link-section">
-            <h2><i class="fas fa-plus-circle"></i> 管理收藏</h2>
-            <form id="addLinkForm" class="add-link-form">
-                <input type="text" id="linkTitle" placeholder="标题 (如：百度)" required>
-                <input type="url" id="linkUrl" placeholder="网址 (如：https://www.baidu.com)" required>
-                <input type="text" id="linkIcon" placeholder="图标类名 (如：fab fa-google, 可选)">
-                <button type="submit">添加</button>
-            </form>
-        </section>
-
         <section class="links-section">
-            <h2><i class="fas fa-link"></i> 链接列表</h2>
+            <div class="section-header">
+                <h2><i class="fas fa-bookmark"></i> 我的收藏</h2>
+                <button id="toggleAddPanel" class="text-btn">
+                    <i class="fas fa-plus"></i> 添加新链接
+                </button>
+            </div>
+
+            <div id="addLinkPanel" class="add-link-panel hidden">
+                <form id="addLinkForm" class="add-link-form">
+                    <div class="form-group">
+                        <input type="text" id="linkTitle" placeholder="标题 (如: GitHub)" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="url" id="linkUrl" placeholder="网址 (如: https://github.com)" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" id="linkIcon" placeholder="图标代码 (可选, 为空则自动匹配)">
+                        <small>支持 FontAwesome, 如: <code onclick="fillIconExample(this)">fab fa-github</code></small>
+                    </div>
+                    <button type="submit" class="submit-btn">确认添加</button>
+                </form>
+            </div>
+
             <div class="link-grid" id="links-container">
             </div>
         </section>
-
     </div>
 
     <footer class="footer">
-        <p>&copy; 2025 Local Storage Powered.</p>
+        <p>&copy; <span id="year"></span> My Digital Garden. stored locally.</p>
     </footer>
 
     <script src="script.js"></script>
