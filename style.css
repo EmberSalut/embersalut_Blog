@@ -1,44 +1,253 @@
-/* style.css (删除的内容块) */
+/* 定义主题变量，便于后续修改颜色 */
+:root {
+    --color-primary: #5B9A9A;
+    /* 主色调：浅青绿 */
+    --color-secondary: #B9D7D7;
+    /* 辅助色调 */
+    --color-background: #F7F9FC;
+    /* 页面背景 */
+    --color-card-bg: #FFFFFF;
+    /* 卡片背景 */
+    --color-text: #333333;
+    /* 主要文本 */
+    --color-subtext: #666666;
+    /* 次要文本 */
+    --color-shadow: rgba(0, 0, 0, 0.08);
+    /* 阴影 */
+}
 
-/* 3. 标签筛选区样式 */
-/*
-.tag-section h2,
+/* 全局重置和基础样式 */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background-color: var(--color-background);
+    color: var(--color-text);
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+}
+
+a {
+    text-decoration: none;
+    color: var(--color-primary);
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* 头部 Header */
+.header {
+    background-color: var(--color-card-bg);
+    padding: 30px 20px;
+    text-align: center;
+    border-bottom: 1px solid var(--color-secondary);
+}
+
+.header h1 {
+    color: var(--color-primary);
+    margin: 0 0 10px 0;
+    font-size: 2em;
+}
+
+.header #current-time {
+    color: var(--color-subtext);
+    font-size: 0.9em;
+}
+
+/* 搜索框 */
+.search-box {
+    display: flex;
+    gap: 10px;
+    margin: 40px 0 30px 0;
+}
+
+.search-box input {
+    flex-grow: 1;
+    padding: 12px 15px;
+    border: 2px solid var(--color-secondary);
+    border-radius: 8px;
+    font-size: 1em;
+    transition: border-color 0.3s;
+}
+
+.search-box input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+}
+
+.search-box button {
+    padding: 12px 25px;
+    border: none;
+    background-color: var(--color-primary);
+    color: white;
+    font-size: 1em;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.search-box button:hover {
+    background-color: #4A8181;
+}
+
+/* 标题样式 */
+.add-link-section h2,
 .links-section h2 {
     color: var(--color-text);
     border-left: 5px solid var(--color-primary);
-    padding-left: 10px;
+    padding-left: 15px;
+    margin-top: 30px;
     margin-bottom: 20px;
     font-weight: 500;
 }
 
-.tag-container {
+/* 链接网格布局 */
+.link-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+    padding-bottom: 40px;
+}
+
+/* 链接卡片 (wrapper用于定位删除按钮) */
+.link-card-wrapper {
+    position: relative;
+}
+
+.link-card {
     display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    padding: 10px 0 30px 0;
-}
-
-.tag-button {
-    padding: 8px 15px;
-    border: 1px solid var(--color-secondary);
-    border-radius: 20px;
-    background-color: var(--color-tag-bg);
+    align-items: center;
+    padding: 15px;
+    background-color: var(--color-card-bg);
+    border-radius: 8px;
+    box-shadow: 0 4px 8px var(--color-shadow);
+    transition: transform 0.2s, box-shadow 0.2s;
     color: var(--color-text);
-    font-size: 14px;
+    width: 100%;
+    /* 确保填满父容器 */
+    box-sizing: border-box;
+}
+
+.link-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.link-card i {
+    font-size: 1.5em;
+    color: var(--color-primary);
+    margin-right: 15px;
+}
+
+.link-card span {
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex-grow: 1;
+}
+
+/* 新增：删除按钮样式 */
+.delete-button {
+    position: absolute;
+    right: 5px;
+    /* 调整位置，使其在卡片最右侧 */
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--color-subtext);
+    /* 使用次要颜色，鼠标悬停时变红 */
     cursor: pointer;
-    transition: all 0.2s;
-    user-select: none;
+    font-size: 1.1em;
+    padding: 5px;
+    opacity: 0.7;
+    transition: color 0.2s, opacity 0.2s;
+    z-index: 10;
 }
 
-.tag-button:hover:not(.active) {
-    background-color: #DDEEEF;
-    border-color: var(--color-primary);
+.delete-button:hover {
+    opacity: 1;
+    color: #CC0000;
 }
 
-.tag-button.active {
+/* 新增：添加链接表单样式 */
+.add-link-form {
+    display: flex;
+    gap: 10px;
+    padding: 10px 0 40px 0;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.add-link-form input {
+    flex-grow: 1;
+    min-width: 180px;
+    padding: 10px 12px;
+    border: 1px solid var(--color-secondary);
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.add-link-form button[type="submit"] {
+    padding: 10px 20px;
+    border: none;
     background-color: var(--color-primary);
     color: white;
-    border-color: var(--color-primary);
-    font-weight: 600;
+    font-size: 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s;
 }
-*/
+
+.add-link-form button[type="submit"]:hover {
+    background-color: #4A8181;
+}
+
+
+/* 底部 Footer */
+.footer {
+    text-align: center;
+    padding: 20px;
+    border-top: 1px solid var(--color-secondary);
+    color: var(--color-subtext);
+    font-size: 0.85em;
+    margin-top: 20px;
+}
+
+
+/* 媒体查询 (响应式) */
+@media (max-width: 768px) {
+    .container {
+        padding: 10px;
+    }
+
+    .link-grid {
+        grid-template-columns: 1fr;
+        /* 手机上改为单列 */
+    }
+
+    .header h1 {
+        font-size: 1.8em;
+    }
+
+    .search-box {
+        flex-direction: column;
+    }
+
+    .search-box button {
+        width: 100%;
+    }
+
+    .add-link-form {
+        flex-direction: column;
+    }
+
+    .add-link-form input,
+    .add-link-form button[type="submit"] {
+        width: 100%;
+        box-sizing: border-box;
+    }
+}

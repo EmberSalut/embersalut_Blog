@@ -1,13 +1,49 @@
-<div class="container">
-    <div class="search-box">
-        <input type="text" id="searchInput" placeholder="快速搜索 (输入后回车搜索 Google)">
-        <button onclick="performSearch()">搜索</button>
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的清新收藏夹 - My Fresh Links</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+
+<body>
+    <header class="header">
+        <h1>🌱 收藏夹 | Links</h1>
+        <p id="current-time">加载中...</p>
+    </header>
+
+    <div class="container">
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="快速搜索 (输入后回车搜索 Google)">
+            <button onclick="performSearch()">搜索</button>
+        </div>
+
+        <section class="add-link-section">
+            <h2><i class="fas fa-plus-circle"></i> 管理收藏</h2>
+            <form id="addLinkForm" class="add-link-form">
+                <input type="text" id="linkTitle" placeholder="标题 (如：百度)" required>
+                <input type="url" id="linkUrl" placeholder="网址 (如：https://www.baidu.com)" required>
+                <input type="text" id="linkIcon" placeholder="图标类名 (如：fab fa-google, 可选)">
+                <button type="submit">添加</button>
+            </form>
+        </section>
+
+        <section class="links-section">
+            <h2><i class="fas fa-link"></i> 链接列表</h2>
+            <div class="link-grid" id="links-container">
+            </div>
+        </section>
+
     </div>
 
-    <section class="links-section">
-        <h2><i class="fas fa-link"></i> 收藏列表</h2>
-        <div class="link-grid" id="links-container">
-        </div>
-    </section>
+    <footer class="footer">
+        <p>&copy; 2025 Local Storage Powered.</p>
+    </footer>
 
-</div>
+    <script src="script.js"></script>
+</body>
+
+</html>
