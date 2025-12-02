@@ -1,12 +1,25 @@
 // ==================== 默认链接数据 (仅用于首次加载) ====================
 // 如果 LocalStorage 中没有数据，将使用此默认数据。
 const DEFAULT_LINKS = [
+    // --- 原始保留链接 ---
     { title: "魔戒 Mojie.App", url: "https://mojie.app/", icon: "fas fa-magic" },
     { title: "AnyLand", url: "https://anyland.xyz", icon: "fas fa-map-marked-alt" },
     { title: "GitHub", url: "https://github.com", icon: "fab fa-github" },
     { title: "AI Hub Mix", url: "https://aihubmix.com/", icon: "fas fa-robot" },
     { title: "YouTube", url: "https://www.youtube.com", icon: "fab fa-youtube" },
     { title: "海外抖音 (TikTok)", url: "https://www.tiktok.com", icon: "fab fa-tiktok" },
+
+    // --- 新增链接 ---
+    // 内部网络 NAS 地址
+    { title: "内部网络 NAS (192.168.1.3)", url: "http://192.168.1.3", icon: "fas fa-server" },
+    // 海南热带海洋学院教务处
+    { title: "海南热带海洋学院教务处", url: "http://jwc.hntou.edu.cn/", icon: "fas fa-graduation-cap" },
+    // X (原 Twitter)
+    { title: "X (Twitter)", url: "https://x.com/home", icon: "fab fa-twitter" },
+    // 知名 AI 网址
+    { title: "ChatGPT", url: "https://chatgpt.com/", icon: "fas fa-comments" },
+    { title: "Gemini", url: "https://gemini.google.com/", icon: "fas fa-brain" },
+    { title: "Midjourney", url: "https://www.midjourney.com/", icon: "fas fa-palette" },
 ];
 
 const STORAGE_KEY = 'myFreshLinksData_V2'; // 更改 key 以避免旧数据冲突
